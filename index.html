@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Point Mapper - Professional Edition</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Top Toolbar -->
+        <header class="toolbar">
+            <div class="toolbar-left">
+                <div class="logo">
+                    <span class="logo-icon">🗺️</span>
+                    <span class="logo-text">Image Point Mapper</span>
+                </div>
+                <div class="toolbar-actions">
+                    <button id="undoBtn" class="toolbar-btn" disabled title="Undo (Ctrl+Z)">
+                        <span class="btn-icon">↶</span>
+                        <span class="btn-text">Undo</span>
+                    </button>
+                    <button id="redoBtn" class="toolbar-btn" disabled title="Redo (Ctrl+Y)">
+                        <span class="btn-icon">↷</span>
+                        <span class="btn-text">Redo</span>
+                    </button>
+                    <div class="toolbar-divider"></div>
+                    <button id="clearAllBtn" class="toolbar-btn" title="Clear all points">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Clear All</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="toolbar-center">
+                <div class="file-upload-zone">
+                    <input type="file" id="imageUpload" class="file-input" accept=".png,.jpg,.jpeg,.webp,.bmp" />
+                    <button class="file-upload-btn">
+                        <span class="btn-icon">📂</span>
+                        <span class="btn-text">Upload Image</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="toolbar-right">
+                <div class="point-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Points:</span>
+                        <span id="pointCount" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Selected:</span>
+                        <span id="selectedCount" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="toolbar-divider"></div>
+                <button id="exportBtn" class="export-btn" disabled>
+                    <span class="btn-icon">💾</span>
+                    <span class="btn-text">Export CSV</span>
+                </button>
+                <div class="toolbar-divider"></div>
+                <button id="settingsBtn" class="toolbar-btn" title="Settings">
+                    <span class="btn-icon">⚙️</span>
+                    <span class="btn-text">Settings</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Quick Actions</h3>
+                <div class="quick-actions">
+                    <button id="selectAllBtn" class="action-btn">
+                        <span class="btn-icon">☑️</span>
+                        <span class="btn-text">Select All</span>
+                    </button>
+                    <button id="deselectAllBtn" class="action-btn">
+                        <span class="btn-icon">⬜</span>
+                        <span class="btn-text">Deselect All</span>
+                    </button>
+                    <button id="deleteSelectedBtn" class="action-btn danger" disabled>
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Delete Selected</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Prefix Management</h3>
+                <div class="prefix-management">
+                    <div class="add-prefix-form">
+                        <input type="text" id="newPrefixInput" placeholder="Add new prefix..." maxlength="10">
+                        <button id="addPrefixBtn" class="add-prefix-btn">
+                            <span class="btn-icon">+</span>
+                        </button>
+                    </div>
+                    <div class="prefix-list" id="prefixList">
+                        <!-- Dynamic prefix list will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Point Types</h3>
+                <div class="point-type-filters">
+                    <button class="filter-btn active" data-type="all">All Points</button>
+                    <div id="dynamicFilters">
+                        <!-- Dynamic filters will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Instructions</h3>
+                <div class="instructions-content">
+                    <div class="instruction-item">
+                        <span class="instruction-icon">👆</span>
+                        <span class="instruction-text">Click to add point</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="instruction-icon">🖱️</span>
+                        <span class="instruction-text">Right-click for menu</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="instruction-icon">✋</span>
+                        <span class="instruction-text">Drag to move</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="instruction-icon">⌨️</span>
+                        <span class="instruction-text">Delete key removes</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Keyboard Shortcuts</h3>
+                <div class="shortcuts-list">
+                    <div class="shortcut-item">
+                        <kbd>Ctrl+Z</kbd>
+                        <span>Undo</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl+Y</kbd>
+                        <span>Redo</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl+A</kbd>
+                        <span>Select All</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl+S</kbd>
+                        <span>Export CSV</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Del</kbd>
+                        <span>Delete Selected</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Esc</kbd>
+                        <span>Deselect All</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Canvas Area -->
+        <main class="canvas-area">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="imageCanvas"></canvas>
+                <div class="canvas-overlay">
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone-content">
+                            <span class="drop-zone-icon">📁</span>
+                            <h3>Drop your image here</h3>
+                            <p>or click "Upload Image" to browse files</p>
+                            <div class="supported-formats">
+                                Supports: PNG, JPG, JPEG, WebP, BMP
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="contextMenu" class="context-menu">
+        <div class="context-menu-item" data-action="edit">
+            <span class="menu-icon">✏️</span>
+            <span class="menu-text">Edit Point</span>
+        </div>
+        <div class="context-menu-item" data-action="duplicate">
+            <span class="menu-icon">📋</span>
+            <span class="menu-text">Duplicate</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" data-action="delete">
+            <span class="menu-icon">🗑️</span>
+            <span class="menu-text">Delete</span>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="labelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">📍 Add New Point</div>
+            <form id="pointForm">
+                <div class="form-group">
+                    <label for="pointPrefix">Prefix:</label>
+                    <select id="pointPrefix">
+                        <!-- Dynamic options will be populated here -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="pointId">Point ID:</label>
+                    <input type="text" id="pointId" required placeholder="Enter point identifier" />
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Point</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content settings-modal">
+            <div class="modal-header">⚙️ Settings & Customization</div>
+            
+            <div class="settings-tabs">
+                <button class="tab-btn active" data-tab="appearance">🎨 Appearance</button>
+                <button class="tab-btn" data-tab="behavior">⚡ Behavior</button>
+                <button class="tab-btn" data-tab="export">📊 Export</button>
+                <button class="tab-btn" data-tab="advanced">🔧 Advanced</button>
+            </div>
+
+            <div class="settings-content">
+                <!-- Appearance Tab -->
+                <div class="tab-content active" id="appearance-tab">
+                    <div class="settings-section">
+                        <h3 class="section-title">🌈 Color Scheme</h3>
+                        <div class="setting-group">
+                            <label>Primary Gradient:</label>
+                            <div class="gradient-picker">
+                                <input type="color" id="primaryColor1" value="#1e3a8a" class="color-input">
+                                <span class="gradient-arrow">→</span>
+                                <input type="color" id="primaryColor2" value="#065f46" class="color-input">
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label>Secondary Gradient:</label>
+                            <div class="gradient-picker">
+                                <input type="color" id="secondaryColor1" value="#4ade80" class="color-input">
+                                <span class="gradient-arrow">→</span>
+                                <input type="color" id="secondaryColor2" value="#eab308" class="color-input">
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label>Preset Themes:</label>
+                            <div class="theme-presets">
+                                <button class="theme-btn active" data-theme="ocean">🌊 Ocean Deep</button>
+                                <button class="theme-btn" data-theme="forest">🌲 Forest</button>
+                                <button class="theme-btn" data-theme="sunset">🌅 Sunset</button>
+                                <button class="theme-btn" data-theme="cosmic">🌌 Cosmic</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3 class="section-title">📍 Point Display</h3>
+                        <div class="setting-group">
+                            <label class="toggle-label">
+                                <span>Show Point Labels</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="showLabels" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label>Point Size:</label>
+                            <div class="range-input">
+                                <input type="range" id="pointSize" min="4" max="20" value="8">
+                                <span class="range-value">8px</span>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label>Label Font Size:</label>
+                            <div class="range-input">
+                                <input type="range" id="labelFontSize" min="8" max="24" value="12">
+                                <span class="range-value">12px</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Behavior Tab -->
+                <div class="tab-content" id="behavior-tab">
+                    <div class="settings-section">
+                        <h3 class="section-title">🎯 Interaction</h3>
+                        <div class="setting-group">
+                            <label class="toggle-label">
+                                <span>Auto-suggest Point IDs</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="autoSuggestIds" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label class="toggle-label">
+                                <span>Smooth Animations</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="smoothAnimations" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label>Click Tolerance:</label>
+                            <div class="range-input">
+                                <input type="range" id="clickTolerance" min="5" max="30" value="15">
+                                <span class="range-value">15px</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3 class="section-title">🖱️ Mouse & Keyboard</h3>
+                        <div class="setting-group">
+                            <label class="toggle-label">
+                                <span>Confirm Before Deleting</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="confirmDelete" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label class="toggle-label">
+                                <span>Enable Keyboard Shortcuts</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="enableShortcuts" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Tab -->
+                <div class="tab-content" id="export-tab">
+                    <div class="settings-section">
+                        <h3 class="section-title">📋 CSV Export Options</h3>
+                        <div class="setting-group">
+                            <label class="toggle-label">
+                                <span>Include Original Coordinates</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="includeOriginalCoords" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label class="toggle-label">
+                                <span>Include Point Type Column</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="includePointType" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label>CSV Delimiter:</label>
+                            <select id="csvDelimiter" class="setting-select">
+                                <option value=",">Comma (,)</option>
+                                <option value=";">Semicolon (;)</option>
+                                <option value="\t">Tab (\t)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Tab -->
+                <div class="tab-content" id="advanced-tab">
+                    <div class="settings-section">
+                        <h3 class="section-title">🔧 Performance</h3>
+                        <div class="setting-group">
+                            <label>History Size (Undo/Redo):</label>
+                            <div class="range-input">
+                                <input type="range" id="historySize" min="10" max="100" value="50">
+                                <span class="range-value">50</span>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label class="toggle-label">
+                                <span>High Quality Rendering</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="highQuality" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3 class="section-title">💾 Data</h3>
+                        <div class="setting-group">
+                            <div class="action-buttons">
+                                <button id="exportSettings" class="action-btn secondary">Export Settings</button>
+                                <button id="importSettings" class="action-btn secondary">Import Settings</button>
+                                <button id="resetSettings" class="action-btn danger">Reset to Defaults</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button type="button" id="settingsCancelBtn" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="settingsApplyBtn" class="btn btn-primary">Apply Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
